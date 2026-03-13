@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,20 +38,38 @@ function DevicesContent() {
   const params = useParams<{ type: string }>()
   const routeType = params.type
   const deviceType = typeMap[routeType]
-  const [devices, setDevices] = useState<DeviceItem[]>([])
-  const [loading, setLoading] = useState(false)
+  const [allDevices, setAllDevices] = useState<DeviceItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const cacheRef = useRef<{ siteId: string; devices: DeviceItem[] } | null>(null)
 
   const title = useMemo(() => titleMap[routeType] ?? 'Devices', [routeType])
 
+  const devices = useMemo(
+    () => (deviceType ? allDevices.filter((d) => d.type === deviceType) : []),
+    [allDevices, deviceType],
+  )
+
   useEffect(() => {
-    if (!selectedSiteId || !deviceType) return
-    fetch(`/api/sites/${selectedSiteId}/devices?type=${deviceType}`, { cache: 'no-store' })
+    if (!selectedSiteId || !deviceType) {
+      setLoading(false)
+      return
+    }
+    if (cacheRef.current?.siteId === selectedSiteId) {
+      setAllDevices(cacheRef.current.devices)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    fetch(`/api/sites/${selectedSiteId}/devices`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
-        setDevices(json.devices ?? [])
+        const list = (json.devices ?? []) as DeviceItem[]
+        cacheRef.current = { siteId: selectedSiteId, devices: list }
+        setAllDevices(list)
       })
+      .catch(() => setAllDevices([]))
       .finally(() => setLoading(false))
-  }, [deviceType, selectedSiteId])
+  }, [selectedSiteId, deviceType])
 
   if (!deviceType) {
     return <div className="text-sm text-muted-foreground">Unknown device type.</div>
