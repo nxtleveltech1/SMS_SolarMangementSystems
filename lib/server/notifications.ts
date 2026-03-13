@@ -14,8 +14,8 @@ export const sendTestEmail = async () => {
   const result = await client.emails.send({
     from,
     to,
-    subject: 'SolarFlow test alert',
-    html: '<p>SolarFlow alert pipeline is configured and reachable.</p>',
+    subject: 'SMS test alert',
+    html: '<p>SMS alert pipeline is configured and reachable.</p>',
   })
 
   return { sent: true, id: result.data?.id }

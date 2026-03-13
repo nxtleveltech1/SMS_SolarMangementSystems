@@ -87,8 +87,8 @@ export function AppSidebar() {
             <Sun className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-semibold text-sidebar-foreground">SolarFlow</span>
-            <span className="text-xs text-sidebar-foreground/60">Energy Monitor</span>
+            <span className="text-sm font-semibold text-sidebar-foreground">SMS</span>
+            <span className="text-xs text-sidebar-foreground/60">Solar Management System</span>
           </div>
         </div>
       </SidebarHeader>

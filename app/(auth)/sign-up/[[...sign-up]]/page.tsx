@@ -127,7 +127,7 @@ export default function SignUpPage() {
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-xl">Create an account</CardTitle>
-        <CardDescription>Sign up to access SolarFlow</CardDescription>
+        <CardDescription>Sign up to access SMS</CardDescription>
       </CardHeader>
       <form onSubmit={handleSignUp}>
         <CardContent className="space-y-4">

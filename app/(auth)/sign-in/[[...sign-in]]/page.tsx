@@ -69,7 +69,7 @@ export default function SignInPage() {
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-xl">Sign in</CardTitle>
-        <CardDescription>Enter your credentials to access SolarFlow</CardDescription>
+        <CardDescription>Enter your credentials to access SMS</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">

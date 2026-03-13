@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'SolarFlow - Solar Energy Monitoring Platform',
+  title: 'SMS - Solar Management System',
   description: 'Real-time solar energy monitoring, control, and analytics platform for residential and enterprise solar installations.',
   generator: 'v0.app',
   icons: {
