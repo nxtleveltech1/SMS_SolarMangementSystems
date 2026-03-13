@@ -21,6 +21,16 @@ Schema has been applied and seed data (organizations, sites, devices, site_membe
    ```
    Use the **pooled** URL (host contains `-pooler`) for the app.
 
+### Vercel deployment
+
+Add `DATABASE_URL` to your Vercel project Environment Variables:
+
+1. Vercel Dashboard → Project → Settings → Environment Variables
+2. Add `DATABASE_URL` with the **pooled** Neon connection string (same as `.env.local`)
+3. Redeploy after adding
+
+Without this, the deployed app cannot connect to the database and will show "No site data available".
+
 ### Optional: run migrations/seed from this repo
 
 With `DATABASE_URL` set in `.env.local`:

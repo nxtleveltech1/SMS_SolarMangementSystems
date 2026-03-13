@@ -62,6 +62,21 @@ export const getCurrentRole = async (siteId?: string): Promise<AppRole> => {
     return membership.rows[0].role
   }
 
+  // Auto-onboard: add signed-in user to site as admin when they have no membership
+  const hasAnyMembership = await query<{ count: string }>(
+    'SELECT count(*)::text FROM site_memberships WHERE clerk_user_id = $1',
+    [session.userId],
+  )
+  if (Number(hasAnyMembership.rows[0]?.count ?? 0) === 0) {
+    await query(
+      `INSERT INTO site_memberships (site_id, clerk_user_id, role)
+       SELECT id, $1, 'admin' FROM sites
+       ON CONFLICT (site_id, clerk_user_id) DO NOTHING`,
+      [session.userId],
+    )
+    return 'admin'
+  }
+
   if (isAuthConfigured() && fallbackRole !== 'admin') {
     throw new Error('FORBIDDEN')
   }
