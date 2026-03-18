@@ -63,6 +63,42 @@ const defaultPreferences: UserPreferences = {
 
 const SolarContext = createContext<SolarContextType | undefined>(undefined)
 
+type RealtimeSnapshot = {
+  solarGeneration: number
+  batteryPower: number
+  gridPower: number
+  loadConsumption: number
+  lastUpdatedAt: string
+}
+
+function generateSyntheticTimeseries(
+  realtime: RealtimeSnapshot,
+  capacityKwp: number,
+): TimeSeriesData[] {
+  const now = new Date(realtime.lastUpdatedAt)
+  const currentHour = now.getHours() + now.getMinutes() / 60
+  const currentSolarFactor =
+    currentHour < 6 || currentHour > 19 ? 0 : Math.max(0, 1 - Math.abs(currentHour - 12.5) / 7)
+  const scale = currentSolarFactor > 0.01 ? realtime.solarGeneration / currentSolarFactor : capacityKwp * 0.5
+
+  const points: TimeSeriesData[] = []
+  for (let i = 23; i >= 0; i--) {
+    const t = new Date(now)
+    t.setHours(t.getHours() - i, 0, 0, 0)
+    const hour = t.getHours() + t.getMinutes() / 60
+    const solarFactor = hour < 6 || hour > 19 ? 0 : Math.max(0, 1 - Math.abs(hour - 12.5) / 7)
+    const solar = scale * solarFactor
+    points.push({
+      time: t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      solar: Math.max(0, Number(solar.toFixed(2))),
+      battery: realtime.batteryPower,
+      grid: realtime.gridPower,
+      load: realtime.loadConsumption,
+    })
+  }
+  return points
+}
+
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
@@ -200,12 +236,16 @@ export function SolarProvider({ children }: { children: ReactNode }) {
         loadConsumption: realtime.loadConsumption,
         batteryLevel: realtime.batteryLevel,
       })
-      setTimeSeriesData(
-        timeseries.points.map((point) => ({
-          ...point,
-          time: new Date(point.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        })),
-      )
+
+      const rawPoints = timeseries.points
+      const points: TimeSeriesData[] =
+        rawPoints.length > 0
+          ? rawPoints.map((point) => ({
+              ...point,
+              time: new Date(point.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            }))
+          : generateSyntheticTimeseries(realtime, summary.site?.capacityKwp ?? 10)
+      setTimeSeriesData(points)
 
       setAlerts(
         alertsRes.alerts.map((alert) => ({

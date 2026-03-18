@@ -29,12 +29,27 @@ const COLORS = {
 
 export function EnergyChart({ data, title = 'Energy Flow', className }: EnergyChartProps) {
   const chartData = useMemo(() => {
-    return data.map(d => ({
+    return data.map((d) => ({
       ...d,
       battery: Math.abs(d.battery),
       grid: Math.abs(d.grid),
     }))
   }, [data])
+
+  if (chartData.length === 0) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="text-lg">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex h-[300px] items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 bg-muted/5">
+            <p className="text-sm text-muted-foreground">No energy data available yet</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className={className}>
